@@ -2,64 +2,136 @@ import java.util.*;
 
 public class FileSystem {
 
-    private enum NodeType {
-        FILE,
-        DIRECTORY
-    }
-
-    private final Node root;
+    private final DirectoryNode root;
 
     public FileSystem() {
-        root = new Node("/", false);
+        root = new DirectoryNode("/");
     }
 
-    public List<String> ls(String path) { 
-        Node node=getNode(path);
-        if (node.isFile) 
-            return List.of(node.name);
-    
-        return new ArrayList<>(node.children.keySet());
+    public List<String> ls(String path) {
+
+        Node node = getNode(path);
+
+        if (node instanceof FileNode) {
+            return List.of("");
+        }
+
+        DirectoryNode directory = (DirectoryNode) node;
+
+        return directory.getChildren().stream().map(Node::getName).collect(ArrayList::new, ArrayList::add, ArrayList::addAll);
     }
-    public void mkdir(String path) { 
-        getOrCreateNode(path,NodeType.DIRECTORY);
-        
-     }
 
-    public void addContentToFile(String path, String content) { 
-        Node node=getOrCreateNode(path,NodeType.FILE);
-        node.content.append(content);
+    public void mkdir(String path) {
+        getOrCreateDirectory(path);
+    }
 
-     }
+    public void addContentToFile(String path, String content) {
+
+        FileNode file = getOrCreateFile(path);
+
+        file.appendContent(content);
+    }
 
     public String readContentFromFile(String path) {
-        Node node=getNode(path);
-        return node.content.toString();
-      }
 
-    private Node getNode(String path){
-        Node curr=root;
-        String allNodeName[]=path.split("/");
-        int n=allNodeName.length;
+        Node node = getNode(path);
 
-        for(int i=1; i<n; ++i){
-            String name=allNodeName[i];
-            curr=curr.children.get(name);
+        if (!(node instanceof FileNode file)) {
+            throw new IllegalArgumentException("Not a file");
         }
-        return curr;
 
-    }
-    private Node getOrCreateNode(String path, NodeType type){
-        Node curr=root;
-        String allNodeName[]=path.split("/");
-        int n=allNodeName.length;
-        for(int i=1; i<n; ++i){
-            String name=allNodeName[i];
-            boolean filetype=(i==n-1 && type==NodeType.FILE);
-            curr=curr.children.computeIfAbsent(name, k -> new Node(name, filetype));
-            
-        }
-        return curr;
+        return file.readContent();
     }
 
+//check these functions
+
+    private Node getNode(String path) {
+        String[] parts = path.split("/");
+
+        Node current = root;
+
+        for (String part : parts) {
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            if (!(current instanceof DirectoryNode directory)) {
+                throw new IllegalArgumentException("Invalid path");
+            }
+
+            current = directory.getChild(part);
+
+            if (current == null) {
+                throw new IllegalArgumentException("Path does not exist");
+            }
+        }
+
+        return current;
+    }  
+    
+    private DirectoryNode getOrCreateDirectory(String path) {
+        String[] parts = path.split("/");
+
+        DirectoryNode current = root;
+
+        for (String part : parts) {
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            Node next = current.getChild(part);
+
+            if (next == null) {
+                DirectoryNode newDir = new DirectoryNode(part);
+                current.addChild(newDir);
+                current = newDir;
+            } else if (next instanceof DirectoryNode directory) {
+                current = directory;
+            } else {
+                throw new IllegalArgumentException("Path conflicts with a file");
+            }
+        }
+
+        return current;
+    }   
+
+    public FileNode getOrCreateFile(String path) {
+        String[] parts = path.split("/");
+
+        DirectoryNode current = root;
+
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            Node next = current.getChild(part);
+
+            if (i == parts.length - 1) { // Last part, should be a file
+                if (next == null) {
+                    FileNode newFile = new FileNode(part);
+                    current.addChild(newFile);
+                    return newFile;
+                } else if (next instanceof FileNode file) {
+                    return file;
+                } else {
+                    throw new IllegalArgumentException("Path conflicts with a directory");
+                }
+            } else { // Intermediate part, should be a directory
+                if (next == null) {
+                    DirectoryNode newDir = new DirectoryNode(part);
+                    current.addChild(newDir);
+                    current = newDir;
+                } else if (next instanceof DirectoryNode directory) {
+                    current = directory;
+                } else {
+                    throw new IllegalArgumentException("Path conflicts with a file");
+                }
+            }
+        }
+
+        throw new IllegalArgumentException("Invalid path");
+    }
 }
- 
