@@ -2,16 +2,28 @@ package Parking_System;
 
 public class NearestSpotStrategy implements SpotSelectionStrategy {
 
-    @Override
     public ParkingSpot selectSpot(ParkingLot parkingLot, Vehicle vehicle) {
+
+        ParkingSpot nearest = null;
+
         for (ParkingFloor floor : parkingLot.getParkingFloors()) {
+
             for (ParkingSpot spot : floor.getParkingSpots()) {
+
                 if (!spot.isOccupied() && spot.canFitVehicle(vehicle)) {
-                    return spot;
+
+                    if (nearest == null ||
+                        spot.getDistanceFromEntrance()
+                            < nearest.getDistanceFromEntrance()) {
+
+                        nearest = spot;
+                    }
                 }
             }
         }
-        return null; // No available spot found
+
+        return nearest;
     }
-    
 }
+    
+

@@ -14,6 +14,10 @@ public class ParkingTicket {
         this.parkingSpot = parkingSpot;
         this.entryTime = System.currentTimeMillis();
     }
+    public void closeTicket() {
+        System.out.println("Closing ticket with ID: " + ticketId);
+        this.exitTime = System.currentTimeMillis();
+    }
 
     public String getTicketId() {
         return ticketId;

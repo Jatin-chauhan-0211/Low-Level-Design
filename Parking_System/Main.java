@@ -7,11 +7,12 @@ public class Main {
        SpotSelectionStrategy spotStrategy = new NearestSpotStrategy();
        PriceSelectionStrategy priceStrategy = new HourlyPriceStrategy(); 
 
-       ParkingSpot spot1 = new ParkingSpot("S1", SpotType.CAR);
-       ParkingSpot spot2 = new ParkingSpot("S2", SpotType.TRUCK);
-       ParkingSpot spot3 = new ParkingSpot("S3", SpotType.MOTORCYCLE);
-
-       ParkingFloor floor1 = new ParkingFloor(1, List.of(spot1, spot2, spot3));
+       ParkingSpot spot1 = new ParkingSpot("S1", SpotType.CAR,5);
+       ParkingSpot spot4 = new ParkingSpot("S4", SpotType.CAR,1);
+       ParkingSpot spot2 = new ParkingSpot("S2", SpotType.TRUCK,10);
+       ParkingSpot spot3 = new ParkingSpot("S3", SpotType.MOTORCYCLE,15);
+    
+       ParkingFloor floor1 = new ParkingFloor(1, List.of(spot1, spot2, spot3,spot4));
         
        ParkingLot parkingLot = new ParkingLot(List.of(floor1));
 

@@ -1,7 +1,10 @@
 package Parking_System;
 
+import java.util.Set;
+import java.util.HashSet;
 
 public class ParkingService {
+    private Set<String> parkedVehicles;
     private SpotSelectionStrategy spotStrategy;
     private PriceSelectionStrategy priceStrategy;
     private ParkingLot parkingLot;
@@ -10,12 +13,18 @@ public class ParkingService {
         this.spotStrategy = spotStrategy;
         this.priceStrategy = priceStrategy;
         this.parkingLot = parkingLot;
+        parkedVehicles = new HashSet<>();
     }
 
     public ParkingTicket parkVehicle(Vehicle vehicle) {
+        if (parkedVehicles.contains(vehicle.getLicensePlateNumber())) {
+            System.out.println("Vehicle with license plate " + vehicle.getLicensePlateNumber() + " is already parked.");
+            return null;
+        }
         ParkingSpot spot = findSpot(vehicle);
         if (spot != null) {
             spot.occupySpot();
+            parkedVehicles.add(vehicle.getLicensePlateNumber());
             System.out.println("Vehicle parked at spot: " + spot.getSpotId());
             ParkingTicket ticket = generateTicket(vehicle, spot);
             System.out.println("GeneratedTicket with ID: " + ticket.getTicketId());
@@ -38,19 +47,23 @@ public class ParkingService {
     public double calculatePrice(ParkingTicket ticket) {
         Vehicle vehicle = ticket.getVehicle();
         long entryTime = ticket.getEntryTime();
-        long exitTime = System.currentTimeMillis();
-        int hoursParked = (int) ((exitTime - entryTime) / (1000));
+        long exitTime = ticket.getExitTime();
+        int hoursParked =  (int)Math.ceil(((exitTime - entryTime) / (60*60*1000)));
+        hoursParked=hoursParked==0?1:hoursParked;
         return priceStrategy.calculatePrice(vehicle, hoursParked);
     }
 
-    public int unparkVehicle(ParkingTicket ticket) {
+    public double unparkVehicle(ParkingTicket ticket) {
         if(ticket == null) {
             System.out.println("Invalid ticket. Cannot unpark vehicle.");
             return 0;
         }
         ParkingSpot spot = ticket.getParkingSpot();
         spot.freeSpot();
-        return (int) calculatePrice(ticket);
+        ticket.closeTicket();
+        parkedVehicles.remove(ticket.getVehicle().getLicensePlateNumber());
+        System.out.println("Vehicle unparked from spot: " + spot.getSpotId());
+        return calculatePrice(ticket);
     }
 
 
