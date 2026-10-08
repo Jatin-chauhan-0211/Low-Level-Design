@@ -14,15 +14,20 @@ public class BookCopy {
         return isAvailable;
     }
 
-    public void setAvailable(boolean available) {
-        isAvailable = available;
+    public void setAvailable() {
+        isAvailable = true;
     }
 
-    public void borrowCopy() {
+    public void returnCopy() {
+        isAvailable = true;
+    }
+
+    public boolean borrowCopy() {
         if (isAvailable) {
             isAvailable = false;
+            return true;
         } else {
-            throw new IllegalStateException("This copy is already borrowed.");
+            return false;
         }
     }
 

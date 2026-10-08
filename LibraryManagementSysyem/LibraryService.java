@@ -5,6 +5,8 @@ import java.time.LocalDate;
 
 public class LibraryService {
 
+    private static final int FINE_RATE = 5; // Assuming a fine of $5 per day late
+
     private Library library;
 
     public LibraryService(Library library) {
@@ -30,6 +32,13 @@ public class LibraryService {
         }
 
         LibraryMember member = library.getMember(memberId);
+        
+        if (member.getActiveBorrowingsCount() >= member.getBookBorrowingLimit()) {
+            System.out.println("Member with ID " + member.getId() + " has reached the borrowing limit.");
+            return null;
+        }
+
+        
         Book book = library.searchBookByIsbn(isbn);
 
         if (book == null) {
@@ -38,21 +47,19 @@ public class LibraryService {
         }
 
         BookCopy availableCopy = book.getAvailableCopy();
+
         if (availableCopy == null) {
             System.out.println("No available copies for book with ISBN " + isbn);
             return null;
         }
 
-        if (member.getActiveBorrowingsCount() >= member.getBookBorrowingLimit()) {
-            System.out.println("Member with ID " + memberId + " has reached the borrowing limit.");
-            return null;
-        }
-
         LocalDate borrowDate = LocalDate.now();
         LocalDate dueDate = borrowDate.plusDays(member.getBorrowingDurationInDays());
-        BorrowingRecord record = new BorrowingRecord(memberId, availableCopy, borrowDate, dueDate);
-        member.addActiveBorrowing(record);
-        availableCopy.setAvailable(false);
+        BorrowingRecord record = new BorrowingRecord(member, availableCopy, borrowDate, dueDate);
+
+        if (availableCopy.borrowCopy()) {
+            member.addActiveBorrowing(record);
+        }
 
         System.out.println("Book borrowed successfully. Record ID: " + record.getRecordId());
         return record;
@@ -82,7 +89,7 @@ public class LibraryService {
         LocalDate returnDate = LocalDate.now();
         recordToReturn.closeRecord(returnDate);
         BookCopy bookCopy = recordToReturn.getBookCopy();
-        bookCopy.setAvailable(true);
+        bookCopy.returnCopy();
         member.removeActiveBorrowing(recordToReturn);
 
         int fine = calculateFine(recordToReturn);
@@ -96,7 +103,7 @@ public class LibraryService {
 
         if (returnDate.isAfter(dueDate)) {
             long daysLate = java.time.temporal.ChronoUnit.DAYS.between(dueDate, returnDate);
-            return (int) daysLate * 5; // Assuming a fine of $5 per day late
+            return (int) daysLate * FINE_RATE; // Assuming a fine of $5 per day late
         }
         return 0;
     }

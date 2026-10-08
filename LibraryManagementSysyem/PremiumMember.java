@@ -1,5 +1,6 @@
 package LibraryManagementSysyem;
-
+import java.util.List;
+import java.util.ArrayList;
 import java.util.UUID;
 import java.util.Set;
 import java.util.HashSet;
@@ -8,8 +9,8 @@ public class PremiumMember implements LibraryMember {
     
     private static final int BOOK_BORROWING_LIMIT = 10;
     private static final int BORROWING_DURATION_IN_DAYS = 30;
-    private String id;
-    private Set<BorrowingRecord> activeBorrowings;
+    private final String id;
+    private final Set<BorrowingRecord> activeBorrowings;
     
     public PremiumMember() {
         this.id = UUID.randomUUID().toString();
@@ -18,8 +19,8 @@ public class PremiumMember implements LibraryMember {
     public int getActiveBorrowingsCount() {
         return activeBorrowings.size();
     }
-    public Set<BorrowingRecord> getActiveBorrowings() {
-        return activeBorrowings;
+    public List<BorrowingRecord> getActiveBorrowings() {
+        return new ArrayList<>(activeBorrowings);
     }
 
     public void removeActiveBorrowing(BorrowingRecord record) {
@@ -29,9 +30,6 @@ public class PremiumMember implements LibraryMember {
         activeBorrowings.add(record);
     }
 
-    public MembershipType getMembershipType() {
-        return MembershipType.Premium;
-    }
 
     @Override
     public String getId() {

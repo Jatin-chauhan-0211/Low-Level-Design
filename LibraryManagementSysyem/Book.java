@@ -7,7 +7,7 @@ public class Book {
     private String title;
     private String author;
     private String isbn;
-    private List<BookCopy> copies;
+    private final List<BookCopy> copies;
 
     public Book(String title, String author, String isbn) {
         this.title = title;
