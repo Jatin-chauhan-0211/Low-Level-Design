@@ -1,0 +1,51 @@
+package LibraryManagementSysyem;
+
+import java.util.UUID;
+import java.util.Set;
+import java.util.HashSet;
+
+public class PremiumMember implements LibraryMember {
+    
+    private static final int BOOK_BORROWING_LIMIT = 10;
+    private static final int BORROWING_DURATION_IN_DAYS = 30;
+    private String id;
+    private Set<BorrowingRecord> activeBorrowings;
+    
+    public PremiumMember() {
+        this.id = UUID.randomUUID().toString();
+        this.activeBorrowings = new HashSet<>();
+    }
+    public int getActiveBorrowingsCount() {
+        return activeBorrowings.size();
+    }
+    public Set<BorrowingRecord> getActiveBorrowings() {
+        return activeBorrowings;
+    }
+
+    public void removeActiveBorrowing(BorrowingRecord record) {
+        activeBorrowings.remove(record);
+    }
+    public void addActiveBorrowing(BorrowingRecord record) {
+        activeBorrowings.add(record);
+    }
+
+    public MembershipType getMembershipType() {
+        return MembershipType.Premium;
+    }
+
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public int getBookBorrowingLimit() {
+        return BOOK_BORROWING_LIMIT;
+    }
+
+    @Override
+    public int getBorrowingDurationInDays() {
+        return BORROWING_DURATION_IN_DAYS;
+    }
+    
+}
